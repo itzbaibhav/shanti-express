@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>School_पुस्तक — PDF Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Baloo+2:wght@700;800&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1e; --bg2:#111a33; --card:#121c3a; --panel:#1a274f;
+  --red:#e11d48; --gold:#facc15; --blue:#38bdf8; --blue2:#0ea5e9;
+  --border:#2a3a6b; --text:#e2e8f0; --muted:#94a3b8;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+body{
+  font-family:'Noto Sans',system-ui,sans-serif;
+  background: #0a0f1e;
+  color: var(--text);
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+  display:flex; flex-direction:column;
+}
+/* doomsday refined background - fixed image + dark cinematic overlay + slow zoom */
+.doom-bg{ position:fixed; inset:-4%; z-index:0; pointer-events:none; overflow:hidden; }
+.doom-bg img{ width:100%; height:100%; object-fit:cover; object-position:center; filter:saturate(1.1) contrast(1.05) brightness(0.9); animation:doom-zoom 26s ease-in-out infinite alternate; }
+@keyframes doom-zoom{ from{transform:scale(1)} to{transform:scale(1.08)} }
+.doom-overlay{ position:fixed; inset:0; z-index:0; pointer-events:none;
+  background: linear-gradient(180deg, rgba(5,8,18,0.72) 0%, rgba(5,8,18,0.55) 35%, rgba(5,8,18,0.78) 100%), radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.55) 100%);
+}
+/* webs removed per request */
+body::after{ display:none; }
+/* swinging spider */
+.spidey{ position:fixed; top:-6px; right:8%; z-index:5; pointer-events:none; transform-origin:top center; animation:swing 4.5s ease-in-out infinite; text-align:center; }
+.spidey .thread{ width:2px; height:90px; background:linear-gradient(#fff,#ffffff88); margin:0 auto; }
+.spidey .bug{ font-size:26px; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.6)); display:block; animation:bug-bob 4.5s ease-in-out infinite; }
+@keyframes swing{ 0%,100%{transform:rotate(8deg)} 50%{transform:rotate(-8deg)} }
+@keyframes bug-bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(8px)} }
+.topbar, .search-wrap, .tabs, .subject-header, .grid, .admin-panel, .footer{ position:relative; z-index:1; }
+@media (prefers-reduced-motion: reduce){ body, body::before{animation:none} .spidey{display:none} }
+a{color:inherit}
+.topbar{
+  position:sticky; top:0; z-index:20;
+  background: transparent;
+  border-bottom:1px solid rgba(255,255,255,0.15);
+  box-shadow: none;
+  backdrop-filter: blur(2px);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 4%;
+}
+.logo{
+  font-family:'Anton','Baloo 2',sans-serif;
+  font-size:1.9rem; letter-spacing:0.5px; line-height:1;
+  display:flex; align-items:baseline; gap:8px;
+}
+.logo span.en{ color: var(--gold); text-shadow: 2px 2px 0 #000, 0 0 12px rgba(250,204,21,0.6); }
+.logo span.hi{ font-family:'Baloo 2',sans-serif; font-weight:800; color:white; text-shadow: 2px 2px 0 var(--red); }
+.logo small{ font-family:'Noto Sans'; font-size:0.65rem; color:var(--blue); font-weight:700; letter-spacing:2px; margin-left:6px; }
+.nav-actions{ display:flex; gap:8px; align-items:center; }
+.btn{
+  border:none; cursor:pointer; font-weight:700; border-radius:10px; padding:9px 14px; font-size:0.85rem;
+  transition:0.15s; border:2px solid transparent; font-family:'Noto Sans';
+}
+.btn:active{ transform:scale(0.97) }
+.btn-primary{ background:var(--red); color:white; border-color:#000; box-shadow:3px 3px 0 #000; }
+.btn-primary:hover{ background:#be123c; }
+.btn-gold{ background:var(--gold); color:#000; border-color:#000; box-shadow:3px 3px 0 #000; }
+.btn-ghost{ background:transparent; color:var(--text); border-color:var(--border); }
+.btn-ghost:hover{ background:var(--panel); }
+.btn-blue{ background:var(--blue2); color:white; border-color:#000; box-shadow:3px 3px 0 #000; }
+.btn-deny{ background:white; color:#b91c1c; border:3px solid #000; box-shadow:3px 3px 0 #000; font-weight:800; }
+.btn-deny:hover{ background:#fee2e2; color:#7f1d1d; }
+.req-card{ position:relative; }
+.req-close{ position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%; border:2px solid #000; background:#fff; color:#b91c1c; font-weight:800; cursor:pointer; line-height:1; display:grid; place-items:center; font-size:14px; }
+.req-close:hover{ background:#fee2e2; }
+.search-wrap{ max-width:720px; margin:18px auto 10px; padding:0 4%; display:flex; gap:10px; }
+.search-wrap input{
+  flex:1; padding:12px 16px; border-radius:12px; border:3px solid #000; background:white; color:#0f172a;
+  font-size:0.95rem; font-family:'Noto Sans'; box-shadow:4px 4px 0 #000;
+}
+.search-wrap input::placeholder{ color:#64748b; }
+.tabs{
+  display:flex; gap:10px; padding:14px 4%; overflow-x:auto; scrollbar-width:thin;
+  border-bottom:2px solid var(--border);
+}
+.tab{
+  white-space:nowrap; padding:10px 18px; border-radius:12px; border:3px solid #000; cursor:pointer;
+  background:var(--card); font-weight:800; box-shadow:3px 3px 0 #000; display:flex; gap:8px; align-items:center;
+  transition:0.15s; font-size:0.92rem;
+}
+.tab.active{ background:var(--gold); color:#000; transform:translateY(-2px); box-shadow:4px 4px 0 #000; }
+.tab:hover{ transform:translateY(-1px); }
+.tab .icon{ font-size:1.1rem }
+.subject-header{
+  display:flex; justify-content:space-between; align-items:center; padding:16px 4% 8px; flex-wrap:wrap; gap:10px;
+}
+.subject-title{ font-family:'Anton'; font-size:1.5rem; letter-spacing:0.5px; display:flex; gap:10px; align-items:center; }
+.admin-only{ display:none; }
+body.admin .admin-only{ display:inline-flex; }
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:16px; padding:12px 4% 30px;
+}
+.card{
+  background: white; color:#0f172a; border:3px solid #000; border-radius:16px;
+  padding:14px; box-shadow:5px 5px 0 #000; position:relative; overflow:hidden;
+  display:flex; flex-direction:column; gap:10px;
+  transform:rotate(-0.3deg);
+}
+.card:nth-child(even){ transform:rotate(0.4deg); }
+.card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg, var(--red), var(--gold), var(--blue2));
+}
+.card h3{ font-family:'Baloo 2','Noto Sans'; font-weight:800; font-size:1.05rem; line-height:1.2; word-break:break-word; }
+.card small{ color:#64748b; font-size:0.75rem; }
+.card-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; }
+.card-actions .btn{ flex:1; text-align:center; font-size:0.82rem; padding:8px 10px; }
+.empty{ text-align:center; padding:40px 4%; color:var(--muted); grid-column:1/-1; }
+.empty .big{ font-size:2rem; margin-bottom:8px; }
+.viewer-modal{ position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; z-index:50; }
+.viewer-modal.open{ display:flex; flex-direction:column; }
+.viewer-bar{ background:#000; color:white; display:flex; justify-content:space-between; align-items:center; padding:10px 16px; }
+.viewer-bar button{ background:var(--red); color:white; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
+.viewer-modal iframe{ flex:1; border:none; background:white; }
+.admin-panel{
+  margin:18px 4%; background: var(--panel); border:3px solid #000; border-radius:16px; padding:16px;
+  box-shadow:5px 5px 0 #000;
+}
+.admin-panel h3{ font-family:'Anton'; letter-spacing:0.5px; margin-bottom:10px; }
+.admin-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0; }
+.admin-row input{ padding:10px 12px; border-radius:10px; border:2px solid #000; font-family:'Noto Sans'; }
+.login-box{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.status{ font-size:0.85rem; padding:8px 10px; border-radius:8px; }
+.status.ok{ background:#dcfce7; color:#166534; border:1px solid #86efac; }
+.status.err{ background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
+.status.wait{ background:#fef9c3; color:#854d0e; border:1px solid #fde047; }
+.footer{
+  margin-top:auto; padding:18px 4%; border-top:1px solid rgba(255,255,255,0.15); background: transparent;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; color:var(--muted); font-size:0.8rem;
+  position:sticky; bottom:0; z-index:10; width:100%;
+  backdrop-filter: blur(2px);
+}
+.easter-btn{
+  width:28px; height:28px; border-radius:50%; border:2px solid var(--border); background:transparent; cursor:pointer;
+  display:grid; place-items:center; font-size:14px; opacity:0.55; transition:0.15s;
+}
+.easter-btn:hover{ opacity:1; background:var(--panel); transform:scale(1.1); }
+.popup{ position:fixed; bottom:20px; right:20px; background:white; color:#0f172a; border:3px solid #000; border-radius:12px; padding:14px; box-shadow:6px 6px 0 #000; max-width:320px; display:none; z-index:60; }
+.popup.show{ display:block; }
+/* smooth admin login */
+#loginPanel{ overflow:hidden; max-height:0; opacity:0; transform:translateY(-10px); transition:max-height .38s ease, opacity .3s ease, transform .32s ease, margin .32s ease, padding .32s ease; margin-top:0; margin-bottom:0; padding-top:0; padding-bottom:0; border-width:0; pointer-events:none; }
+#loginPanel.open{ max-height:320px; opacity:1; transform:none; margin:18px 4%; padding:16px; border-width:3px; pointer-events:auto; }
+@media (max-width:700px){
+  .logo{ font-size:1.35rem; }
+  .grid{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="en" style="color:var(--gold)">Shanti Express</span> <small>Baibhav</small></div>
+  <div class="nav-actions">
+    <span id="ownerBadge" style="font-size:0.7rem; color:var(--muted); display:none"></span>
+    <button id="loginBtn" class="btn btn-ghost" onclick="toggleLogin()">Admin Login</button>
+    <button id="logoutBtn" class="btn btn-ghost" style="display:none" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="doom-bg" aria-hidden="true"><img src="/static/doomsday.jpg?v=3" alt=""/></div>
+<div class="doom-overlay" aria-hidden="true"></div>
+<div class="spidey" aria-hidden="true"><div class="thread"></div><span class="bug">🕷️</span></div>
+<div id="loginPanel" class="admin-panel">
+  <h3>🔐 Admin Login</h3>
+  <div class="login-box">
+    <input id="loginEmail" placeholder="Enter owner Gmail" style="min-width:260px" />
+    <input id="loginPass" type="password" placeholder="Enter password" />
+    <button class="btn btn-primary" onclick="doLogin()">Login</button>
+    <span id="loginMsg"></span>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <input id="search" placeholder="🔍 Search PDF by name across all subjects..." oninput="onSearch()"/>
+  <button class="btn btn-gold" onclick="onSearch()">Search</button>
+</div>
+
+<div id="tabs" class="tabs"></div>
+
+<div class="subject-header">
+  <div class="subject-title"><span id="subjectIcon">📚</span><span id="subjectName">Loading...</span> <span id="pdfCount" style="font-family:'Noto Sans'; font-size:0.8rem; color:var(--muted); font-weight:600"></span></div>
+  <div style="display:flex; gap:8px; flex-wrap:wrap">
+    <button class="btn btn-ghost admin-only" onclick="renameSubject()">✏️ Rename Subject</button>
+    <button class="btn btn-ghost admin-only" onclick="deleteSubject()" style="color:var(--red)">🗑️ Delete Subject</button>
+    <button class="btn btn-blue admin-only" onclick="openUpload()">⬆️ Upload PDF</button>
+  </div>
+</div>
+
+<div id="grid" class="grid"></div>
+
+<!-- Admin controls -->
+<div id="adminPanel" class="admin-panel admin-only">
+  <h3>⚙️ Admin Panel</h3>
+  <div class="admin-row">
+    <input id="newSubjectName" placeholder="New subject name (e.g. Science)" />
+    <input id="newSubjectIcon" placeholder="Icon emoji (e.g. 🔬)" style="width:130px" />
+    <button class="btn btn-gold" onclick="addSubject()">+ Add Subject</button>
+  </div>
+  <div class="admin-row">
+    <input id="secretTitle" placeholder="Secret PDF title" />
+    <input type="file" id="secretFile" accept="application/pdf" />
+    <button class="btn btn-primary" onclick="uploadSecret()">Upload Secret PDF</button>
+    <span id="secretStatus" class="status" style="display:none"></span>
+  </div>
+  <div class="admin-row" style="border-top:1px solid var(--border); padding-top:12px; margin-top:12px">
+    <input id="transferEmail" placeholder="New owner Gmail" style="min-width:260px" />
+    <button class="btn btn-primary" onclick="transferOwnership()">Transfer Ownership</button>
+    <span id="transferStatus" class="status" style="display:none"></span>
+  </div>
+  <div id="easterRequests" style="margin-top:14px"></div>
+  <div id="allowedBox" style="margin-top:18px; border-top:2px solid var(--border); padding-top:14px">
+    <h4>🔓 Allowed for Secret PDF (persistent until removed):</h4>
+    <div id="allowedList" style="margin-top:8px"></div>
+    <div style="display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap">
+      <input id="checkEmail" placeholder="Check email (e.g. test@gmail.com)" style="flex:1; min-width:220px; padding:10px 12px; border-radius:10px; border:2px solid #000"/>
+      <button class="btn btn-ghost" onclick="checkAccess()" style="background:white; color:#000">Check</button>
+      <span id="checkResult" class="status" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <button class="easter-btn" title="?" onclick="triggerEaster()">😏</button>
+  <div style="font-weight:800; font-family:'Anton','Baloo 2',sans-serif; color:#e11d48; letter-spacing:1px; font-size:1rem; text-shadow:2px 2px 0 #000, 0 0 10px rgba(225,29,72,0.5); text-decoration:underline; text-underline-offset:3px">-Baibhav</div>
+</div>
+
+<div id="uploadModal" class="popup">
+  <h4 style="margin-bottom:8px">Upload PDF to <span id="uploadSubjectName"></span></h4>
+  <input id="pdfTitle" placeholder="PDF title" style="width:100%; padding:10px; border:2px solid #000; border-radius:10px; margin-bottom:8px"/>
+  <input type="file" id="pdfFile" accept="application/pdf" style="margin-bottom:10px"/>
+  <div style="display:flex; gap:8px">
+    <button class="btn btn-primary" onclick="doUpload()">Upload</button>
+    <button class="btn btn-ghost" onclick="closeUpload()">Cancel</button>
+  </div>
+  <div id="uploadMsg" style="margin-top:8px; font-size:0.85rem"></div>
+</div>
+
+<div id="viewer" class="viewer-modal">
+  <div class="viewer-bar">
+    <span id="viewerTitle">PDF Viewer</span>
+    <button onclick="closeViewer()">✕ Close</button>
+  </div>
+  <iframe id="viewerFrame"></iframe>
+</div>
+
+<div id="easterModal" class="popup" style="max-width:380px; bottom:auto; top:50%; right:50%; transform:translate(50%,-50%); display:none">
+  <h3 style="margin-bottom:10px">😏 Secret Access</h3>
+  <p style="font-size:0.85rem; color:#475569; margin-bottom:10px">Enter your name & Gmail to request access. If approved, you can view the secret PDF until admin removes you.</p>
+  <input id="eName" placeholder="Your name" style="width:100%; padding:10px; border:2px solid #000; border-radius:10px; margin-bottom:8px"/>
+  <input id="eEmail" placeholder="Your Gmail (e.g. you@gmail.com)" style="width:100%; padding:10px; border:2px solid #000; border-radius:10px; margin-bottom:10px"/>
+  <div style="display:flex; gap:8px">
+    <button class="btn btn-primary" onclick="submitEaster()">Send Request</button>
+    <button class="btn btn-ghost" onclick="closeEasterModal()" style="background:white; color:#000; border-color:#000">Cancel</button>
+  </div>
+  <div style="margin-top:10px; border-top:1px solid #e2e8f0; padding-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+    <input id="alreadyEmail" placeholder="Already approved? Enter Gmail to open" style="flex:1; min-width:180px; padding:8px 10px; border:2px solid #000; border-radius:10px"/>
+    <button class="btn btn-gold" onclick="openIfAllowed()">Open PDF</button>
+  </div>
+  <div id="easterMsg" style="margin-top:8px; font-size:0.85rem"></div>
+</div>
+<div id="easterPopup" class="popup"></div>
+
+<script>
+let state = { subjects:[], pdfs:[], owner:"", activeSubject:null, token:null, isAdmin:false };
+let secretAvailable=false;
+
+function apiHeaders(){
+  return state.token ? {"Authorization":"Bearer "+state.token} : {};
+}
+
+async function loadConfig(){
+  const r = await fetch('/api/config');
+  const j = await r.json();
+  state.subjects=j.subjects;
+  state.pdfs=j.pdfs;
+  state.owner=j.owner;
+  secretAvailable=j.secretPdf;
+  document.getElementById('ownerBadge').textContent='Owner: '+j.owner;
+  document.getElementById('ownerBadge').style.display='inline';
+  if(!state.activeSubject && state.subjects.length) state.activeSubject=state.subjects[0].id;
+  renderTabs();
+  renderGrid();
+}
+
+function renderTabs(){
+  const el=document.getElementById('tabs');
+  el.innerHTML=state.subjects.map(s=>`<div class="tab ${s.id===state.activeSubject?'active':''}" onclick="switchSubject('${s.id}')"><span class="icon">${s.icon||'📚'}</span>${s.name}</div>`).join('');
+  const cur=state.subjects.find(s=>s.id===state.activeSubject);
+  if(cur){
+    document.getElementById('subjectName').textContent=cur.name;
+    document.getElementById('subjectIcon').textContent=cur.icon||'📚';
+  }
+}
+
+function filteredPdfs(){
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  let list=state.pdfs.filter(p=>p.subjectId===state.activeSubject);
+  if(q){
+    // if searching, search across all subjects but highlight
+    list=state.pdfs.filter(p=>p.title.toLowerCase().includes(q) || p.originalName.toLowerCase().includes(q));
+    document.getElementById('subjectName').textContent=`Search: "${q}"`;
+    document.getElementById('subjectIcon').textContent='🔍';
+  }
+  return list;
+}
+
+function renderGrid(){
+  const grid=document.getElementById('grid');
+  const list=filteredPdfs();
+  const countEl=document.getElementById('pdfCount');
+  if(!document.getElementById('search').value) countEl.textContent=`(${list.length} PDFs)`;
+  else countEl.textContent=`(${list.length} results)`;
+
+  if(!list.length){
+    grid.innerHTML=`<div class="empty"><div class="big">📄</div><p>No PDFs yet in this subject.</p>${state.isAdmin?'<p style="font-size:0.85rem; color:var(--muted)">Click "Upload PDF" to add one.</p>':''}</div>`;
+    return;
+  }
+  grid.innerHTML=list.map(p=>`
+    <div class="card">
+      <h3>${escapeHtml(p.title)}</h3>
+      <small>${escapeHtml(p.originalName)} • ${(p.size/1024).toFixed(0)} KB</small>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="/uploads/${p.filename}" target="_blank" rel="noopener">👁️ View PDF</a>
+        <button class="btn btn-ghost" onclick="openViewer('/uploads/${p.filename}','${escapeHtml(p.title)}')">Preview</button>
+      </div>
+      ${state.isAdmin?`<div style="display:flex; gap:6px; margin-top:6px">
+        <button class="btn btn-ghost" style="flex:1; font-size:0.75rem" onclick="renamePdf('${p.id}')">Rename</button>
+        <button class="btn btn-ghost" style="flex:1; font-size:0.75rem; color:var(--red)" onclick="deletePdf('${p.id}')">Delete</button>
+      </div>`:''}
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) }
+
+function switchSubject(id){
+  state.activeSubject=id;
+  document.getElementById('search').value='';
+  renderTabs(); renderGrid();
+}
+function onSearch(){ renderGrid(); }
+
+function toggleLogin(){
+  const p=document.getElementById('loginPanel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) setTimeout(()=>document.getElementById('loginEmail')?.focus(), 200);
+}
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPass').value;
+  const r=await fetch('/api/login',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password})});
+  const j=await r.json();
+  const msg=document.getElementById('loginMsg');
+  if(j.ok){
+    state.token=j.token; state.isAdmin=true;
+    document.body.classList.add('admin');
+    document.getElementById('loginPanel').classList.remove('open');
+    document.getElementById('loginBtn').style.display='none';
+    document.getElementById('logoutBtn').style.display='inline-flex';
+    showPopup('Logged in as owner: '+j.owner);
+    loadEasterRequests();
+  } else {
+    msg.textContent=j.error||'Login failed';
+    msg.className='status err'; msg.style.display='inline-block';
+  }
+}
+function logout(){
+  state.token=null; state.isAdmin=false;
+  document.body.classList.remove('admin');
+  document.getElementById('loginBtn').style.display='inline-flex';
+  document.getElementById('logoutBtn').style.display='none';
+}
+
+function openUpload(){
+  if(!state.isAdmin) return alert('Admin login required');
+  document.getElementById('uploadSubjectName').textContent=document.getElementById('subjectName').textContent;
+  document.getElementById('uploadModal').classList.add('show');
+}
+function closeUpload(){ document.getElementById('uploadModal').classList.remove('show'); }
+
+async function doUpload(){
+  const title=document.getElementById('pdfTitle').value.trim();
+  const file=document.getElementById('pdfFile').files[0];
+  if(!file) return document.getElementById('uploadMsg').textContent='Select a PDF file';
+  if(!file.name.toLowerCase().endsWith('.pdf')) return document.getElementById('uploadMsg').textContent='Only PDF allowed';
+  const fd=new FormData();
+  fd.append('subjectId', state.activeSubject);
+  fd.append('title', title||file.name);
+  fd.append('file', file);
+  const r=await fetch('/api/upload',{method:'POST', headers: apiHeaders(), body: fd});
+  const j=await r.json();
+  if(j.ok){ document.getElementById('uploadMsg').textContent='Uploaded!'; closeUpload(); loadConfig(); }
+  else document.getElementById('uploadMsg').textContent=j.error||'Upload failed';
+}
+
+async function addSubject(){
+  const name=document.getElementById('newSubjectName').value.trim();
+  const icon=document.getElementById('newSubjectIcon').value.trim()||'📚';
+  if(!name) return alert('Enter subject name');
+  const r=await fetch('/api/subjects',{method:'POST', headers:{...apiHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({name,icon})});
+  const j=await r.json();
+  if(j.ok){ document.getElementById('newSubjectName').value=''; loadConfig(); }
+  else alert(j.error);
+}
+async function renameSubject(){
+  const subj=state.subjects.find(s=>s.id===state.activeSubject);
+  const name=prompt('New name for '+subj.name, subj.name);
+  if(!name) return;
+  const r=await fetch(`/api/subjects/${subj.id}/rename`,{method:'POST', headers:{...apiHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({name})});
+  if(r.ok) loadConfig();
+}
+async function deleteSubject(){
+  if(!confirm('Delete this subject and all its PDFs?')) return;
+  const r=await fetch(`/api/subjects/${state.activeSubject}`,{method:'DELETE', headers: apiHeaders()});
+  if(r.ok){ state.activeSubject=state.subjects[0]?.id; loadConfig(); }
+}
+async function deletePdf(id){
+  if(!confirm('Delete this PDF?')) return;
+  const r=await fetch(`/api/pdf/${id}`,{method:'DELETE', headers: apiHeaders()});
+  if(r.ok) loadConfig();
+}
+async function renamePdf(id){
+  const np=prompt('New title');
+  if(!np) return;
+  const r=await fetch(`/api/pdf/${id}`,{method:'PUT', headers:{...apiHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({title:np})});
+  if(r.ok) loadConfig();
+}
+async function uploadSecret(){
+  const title=document.getElementById('secretTitle').value.trim();
+  const file=document.getElementById('secretFile').files[0];
+  if(!file) return alert('Pick a PDF');
+  const fd=new FormData(); fd.append('isSecret','1'); fd.append('title',title||file.name); fd.append('file',file);
+  const r=await fetch('/api/upload',{method:'POST', headers:apiHeaders(), body:fd});
+  const j=await r.json();
+  const el=document.getElementById('secretStatus');
+  el.style.display='inline-block';
+  if(j.ok){ el.textContent='Secret PDF saved: '+j.secretPdf.title; el.className='status ok'; secretAvailable=true; }
+  else { el.textContent=j.error; el.className='status err'; }
+}
+async function transferOwnership(){
+  const email=document.getElementById('transferEmail').value.trim();
+  if(!email) return alert('Enter Gmail');
+  if(!confirm(`Are you sure? This will give full site control to ${email}`)) return;
+  const r=await fetch('/api/transfer/request',{method:'POST', headers:{...apiHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({newEmail:email})});
+  const j=await r.json();
+  const el=document.getElementById('transferStatus'); el.style.display='inline-block';
+  if(j.ok){ el.textContent='Link: '+j.link; el.className='status ok'; }
+  else { el.textContent=j.error; el.className='status err'; }
+}
+
+function openViewer(url,title){
+  document.getElementById('viewerFrame').src=url;
+  document.getElementById('viewerTitle').textContent=title;
+  document.getElementById('viewer').classList.add('open');
+}
+function closeViewer(){ document.getElementById('viewer').classList.remove('open'); document.getElementById('viewerFrame').src=''; }
+
+let easterPoll=null;
+let pendingEasterId=null;
+function triggerEaster(){
+  document.getElementById('easterModal').style.display='block';
+  document.getElementById('easterModal').classList.add('show');
+}
+function closeEasterModal(){
+  document.getElementById('easterModal').style.display='none';
+  document.getElementById('easterModal').classList.remove('show');
+}
+async function submitEaster(){
+  const name=document.getElementById('eName').value.trim();
+  const email=document.getElementById('eEmail').value.trim();
+  const msg=document.getElementById('easterMsg');
+  if(!name || !email){ msg.textContent='Name and Gmail required'; msg.style.color='#b91c1c'; return; }
+  const r=await fetch('/api/easter/request',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,email})});
+  const j=await r.json();
+  if(!j.ok){ msg.textContent=j.error||'Currently unavailable'; msg.style.color='#b91c1c'; return; }
+  if(j.alreadyAllowed){
+    msg.textContent='Already approved! Opening...'; msg.style.color='#166534';
+    const chk=await (await fetch(`/api/secret/check?email=${encodeURIComponent(email)}`)).json();
+    if(chk.allowed && chk.secretUrl) openViewer(chk.secretUrl, chk.secretTitle);
+    closeEasterModal();
+    showPopup('✅ Already approved — access granted');
+    return;
+  }
+  msg.textContent='Request sent — waiting for approval';
+  msg.style.color='#166534';
+  showPopup('Request sent — waiting for approval (owner approves in Admin Panel)');
+  const id=j.id; pendingEasterId=id;
+  let tries=0;
+  clearInterval(easterPoll);
+  easterPoll=setInterval(async()=>{
+    tries++;
+    const s=await (await fetch(`/api/easter/status?id=${id}`)).json();
+    if(s.status==='approved'){
+      clearInterval(easterPoll);
+      showPopup('✅ Access granted! Opening secret PDF...');
+      closeEasterModal();
+      if(s.secretUrl) openViewer(s.secretUrl, s.secretTitle);
+      else showPopup('Approved but no secret PDF uploaded yet.', true);
+    } else if(s.status==='denied'){ clearInterval(easterPoll); showPopup('Access not granted', true); msg.textContent='Access not granted'; msg.style.color='#b91c1c'; }
+    else if(s.status==='expired'){ clearInterval(easterPoll); showPopup('Access not granted (timeout)', true); msg.textContent='Request expired'; msg.style.color='#b91c1c'; }
+    if(tries>40){ clearInterval(easterPoll); showPopup('Access not granted (timeout)', true); }
+  },3000);
+}
+async function openIfAllowed(){
+  const email=document.getElementById('alreadyEmail').value.trim() || document.getElementById('eEmail').value.trim();
+  if(!email) return alert('Enter Gmail');
+  const r=await fetch(`/api/secret/check?email=${encodeURIComponent(email)}`);
+  const j=await r.json();
+  if(j.allowed && j.secretUrl){ closeEasterModal(); openViewer(j.secretUrl, j.secretTitle); }
+  else { document.getElementById('easterMsg').textContent='Not yet approved or not found'; document.getElementById('easterMsg').style.color='#b91c1c'; }
+}
+function showPopup(msg, isErr=false){
+  const el=document.getElementById('easterPopup');
+  el.textContent=msg;
+  el.style.display='block'; el.classList.add('show');
+  el.style.borderColor=isErr?'#ef4444':'#000';
+  setTimeout(()=>{ el.classList.remove('show'); el.style.display='none'; },4000);
+}
+
+let showClosed=false;
+async function loadEasterRequests(){
+  if(!state.isAdmin) return;
+  const r=await fetch('/api/easter/requests',{headers: apiHeaders()});
+  if(!r.ok) return;
+  const all=await r.json();
+  const el=document.getElementById('easterRequests');
+  // denied / expired are considered closed -> hidden by default
+  const open=all.filter(x=>x.status==='pending'||x.status==='approved');
+  const closed=all.filter(x=>x.status!=='pending'&&x.status!=='approved');
+  if(!open.length && !closed.length){ el.innerHTML='<p style="color:var(--muted); font-size:0.85rem">No easter requests yet.</p>'; }
+  else {
+  let html='<h4>😏 Easter Requests (deny auto-closes, approve stays till ✕):</h4>';
+  if(!open.length) html+='<p style="color:var(--muted); font-size:0.85rem">No open requests. Approved stay here till you press ✕ top-right.</p>';
+  html+=open.slice(-20).reverse().map(x=>`
+    <div class="req-card" style="background:white; color:#000; border:2px solid #000; border-radius:10px; padding:10px; padding-right:36px; margin:6px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px">
+      <button class="req-close" title="Remove manually" onclick="removeEaster('${x.id}')">✕</button>
+      <div><small>${new Date(x.time).toLocaleString()}</small><br><b>${x.status}</b> — ${escapeHtml(x.name||'?')} &lt;${escapeHtml(x.email||'?')}&gt; <small>${x.id.slice(0,8)}</small></div>
+      <div style="display:flex; gap:6px">
+        ${x.status==='pending' ? `<button class="btn btn-primary" onclick="decideEaster('${x.id}','approve')">Approve</button>
+        <button class="btn btn-deny" onclick="decideEaster('${x.id}','deny')">Deny</button>` : `<span style="font-size:0.8rem; color:#166534">Approved — stays till ✕ removed</span>`}
+      </div>
+    </div>
+  `).join('');
+  if(closed.length){
+    html+=`<button class="btn btn-ghost" style="background:white;color:#000;margin-top:8px" onclick="showClosed=!showClosed;loadEasterRequests()">${showClosed?'Hide':'Show'} closed (${closed.length})</button>`;
+    if(showClosed){
+      html+=closed.reverse().map(x=>`
+        <div class="req-card" style="background:#f1f5f9; color:#000; border:2px dashed #94a3b8; border-radius:10px; padding:10px; padding-right:36px; margin:6px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; opacity:0.9">
+          <button class="req-close" title="Remove permanently" onclick="removeEaster('${x.id}')">✕</button>
+          <div><small>${new Date(x.time).toLocaleString()}</small><br><b>${x.status}</b> (closed) — ${escapeHtml(x.name||'?')} &lt;${escapeHtml(x.email||'?')}&gt;</div>
+        </div>`).join('');
+    }
+  }
+  el.innerHTML=html;
+  }
+  loadAllowedList();
+}
+async function decideEaster(id,action){
+  const r=await fetch('/api/easter/decide',{method:'POST', headers:{...apiHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({id,action})});
+  const j=await r.json().catch(()=>({}));
+  if(r.ok){ loadEasterRequests(); showPopup(action==='approve' ? 'Approved — user can now see secret PDF until you press ✕' : 'Denied — request closed'); }
+  else alert(j.error||'Failed');
+}
+async function removeEaster(id){
+  if(!confirm('Manually remove this request? If approved, its secret-PDF access will also be revoked.')) return;
+  const r=await fetch(`/api/easter/${id}`,{method:'DELETE', headers: apiHeaders()});
+  if(r.ok){ loadEasterRequests(); showPopup('Request removed'); }
+  else alert('Remove failed');
+}
+async function loadAllowedList(){
+  const r=await fetch('/api/secret/allowed',{headers: apiHeaders()});
+  if(!r.ok) return;
+  const list=await r.json();
+  const el=document.getElementById('allowedList');
+  if(!list.length){ el.innerHTML='<p style="color:var(--muted); font-size:0.85rem">No one has persistent access yet. Approve a request to grant.</p>'; return; }
+  el.innerHTML=list.map(u=>`
+    <div style="background:white; color:#000; border:2px solid #000; border-radius:10px; padding:10px; margin:6px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px">
+      <div><b>${escapeHtml(u.name||'')}</b> — ${escapeHtml(u.email)}<br><small>Approved: ${new Date(u.approvedAt).toLocaleString()}</small></div>
+      <button class="btn btn-deny" onclick="revokeAccess('${escapeHtml(u.email)}')">Remove</button>
+    </div>
+  `).join('');
+}
+async function revokeAccess(email){
+  if(!confirm('Remove '+email+' from secret PDF access? They will need to request again.')) return;
+  const r=await fetch('/api/secret/revoke',{method:'POST', headers:{...apiHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if(r.ok){ loadAllowedList(); showPopup('Removed '+email); }
+}
+async function checkAccess(){
+  const email=document.getElementById('checkEmail').value.trim();
+  const el=document.getElementById('checkResult');
+  if(!email){ el.textContent='Enter email'; el.className='status err'; el.style.display='inline-block'; return; }
+  const r=await fetch(`/api/secret/check?email=${encodeURIComponent(email)}`);
+  const j=await r.json();
+  el.style.display='inline-block';
+  if(j.allowed){ el.textContent='✅ Has access'; el.className='status ok'; }
+  else { el.textContent='❌ No access'; el.className='status err'; }
+}
+setInterval(()=>{ if(state.isAdmin){ loadEasterRequests(); loadAllowedList(); } },5000);
+
+loadConfig();
+</script>
+</body>
+</html>

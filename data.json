@@ -1,0 +1,34 @@
+{
+  "owner": "baibhavcuteboy@gmail.com",
+  "adminPassword": "Baibhav@2026",
+  "subjects": [
+    {
+      "id": "geography",
+      "name": "Geography",
+      "icon": "🌍"
+    },
+    {
+      "id": "history",
+      "name": "History",
+      "icon": "🏛️"
+    },
+    {
+      "id": "civics",
+      "name": "Civics",
+      "icon": "⚖️"
+    },
+    {
+      "id": "economics",
+      "name": "Economics",
+      "icon": "📈"
+    }
+  ],
+  "pdfs": [],
+  "secretPdf": {
+    "title": "Suuuu",
+    "filename": "secret.pdf"
+  },
+  "easterRequests": [],
+  "pendingTransfers": [],
+  "allowedSecretEmails": []
+}
